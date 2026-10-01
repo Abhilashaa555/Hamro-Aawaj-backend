@@ -20,10 +20,10 @@ const lessonSchema = new mongoose.Schema(
             trim: true
         },
 
-        photo: {
-            type: String,
-            required: true
-        }
+       photos: {
+    type: [String],
+    default: []
+},
     },
     {
         timestamps: true

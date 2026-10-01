@@ -9,6 +9,7 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const lessonRoutes = require("./routes/lessonRoutes");
 const videoRoutes = require("./routes/videoRoutes");
 const quizRoutes = require("./routes/quizRoutes");
+const testRoutes = require("./routes/testRoutes");
 
 dotenv.config();
 
@@ -16,9 +17,10 @@ const app = express();
 
 connectDB();
 
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
+app.use("/api", testRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/lessons", lessonRoutes);
@@ -44,6 +46,6 @@ app.get("/api/admin-test", protect, adminOnly, (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });

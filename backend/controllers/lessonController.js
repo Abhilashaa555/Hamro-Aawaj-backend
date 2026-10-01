@@ -1,16 +1,37 @@
+
 const Lesson = require("../models/Lesson");
+const Video = require("../models/Video");
 
 // Create a lesson
+
 const createLesson = async (req, res) => {
     try {
-        const { category, title, description, photo } = req.body;
+        const {
+            category,
+            title,
+            description,
+            photos,
+            videoUrls
+        } = req.body;
 
+        // Create lesson
         const lesson = await Lesson.create({
             category,
             title,
             description,
-            photo
+            photos
         });
+
+        // Create multiple videos
+        if (videoUrls && videoUrls.length > 0) {
+            const videos = videoUrls.map((videoUrl) => ({
+                lesson: lesson._id,
+                title: title,
+                video_url: videoUrl
+            }));
+
+            await Video.insertMany(videos);
+        }
 
         res.status(201).json({
             message: "Lesson created successfully",
@@ -25,7 +46,10 @@ const createLesson = async (req, res) => {
 };
 
 
+// ==========================================
 // Get all lessons
+// ==========================================
+
 const getLessons = async (req, res) => {
     try {
         const lessons = await Lesson.find()
@@ -41,7 +65,10 @@ const getLessons = async (req, res) => {
 };
 
 
+// ==========================================
 // Get one lesson
+// ==========================================
+
 const getLesson = async (req, res) => {
     try {
         const lesson = await Lesson.findById(req.params.id)
@@ -63,18 +90,28 @@ const getLesson = async (req, res) => {
 };
 
 
+// ==========================================
 // Update a lesson
+// ==========================================
+
 const updateLesson = async (req, res) => {
     try {
-        const { category, title, description, photo } = req.body;
+        const {
+            category,
+            title,
+            description,
+            photos,
+            videoUrls
+        } = req.body;
 
+        // Update lesson
         const lesson = await Lesson.findByIdAndUpdate(
             req.params.id,
             {
                 category,
                 title,
                 description,
-                photo
+                photos
             },
             {
                 new: true,
@@ -86,6 +123,26 @@ const updateLesson = async (req, res) => {
             return res.status(404).json({
                 message: "Lesson not found"
             });
+        }
+
+        // ==========================================
+        // Update multiple videos
+        // ==========================================
+
+        // Remove old videos belonging to this lesson
+        await Video.deleteMany({
+            lesson: lesson._id
+        });
+
+        // Create the new videos
+        if (videoUrls && videoUrls.length > 0) {
+            const videos = videoUrls.map((videoUrl) => ({
+                lesson: lesson._id,
+                title: title,
+                video_url: videoUrl
+            }));
+
+            await Video.insertMany(videos);
         }
 
         res.status(200).json({
@@ -101,7 +158,10 @@ const updateLesson = async (req, res) => {
 };
 
 
+// ==========================================
 // Delete a lesson
+// ==========================================
+
 const deleteLesson = async (req, res) => {
     try {
         const lesson = await Lesson.findByIdAndDelete(req.params.id);
@@ -111,6 +171,11 @@ const deleteLesson = async (req, res) => {
                 message: "Lesson not found"
             });
         }
+
+        // Delete all videos belonging to this lesson
+        await Video.deleteMany({
+            lesson: lesson._id
+        });
 
         res.status(200).json({
             message: "Lesson deleted successfully"
@@ -124,6 +189,8 @@ const deleteLesson = async (req, res) => {
 };
 
 
+// Export
+
 module.exports = {
     createLesson,
     getLessons,
@@ -131,3 +198,4 @@ module.exports = {
     updateLesson,
     deleteLesson
 };
+
